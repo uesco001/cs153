@@ -60,17 +60,13 @@ exec(char *path, char **argv)
   end_op();
   ip = 0;
 
-  //Eventually will point to the top of the heap don't touch
+  // Allocate two pages at the next page boundary.
+  // Make the first inaccessible.  Use the second as the user stack.
   sz = PGROUNDUP(sz);
-  //changed sz -> sp 2nd param lower part of the page, 3rd param upper part of
-  //the page
-  if((sp = allocuvm(pgdir, KERNBASE-4-PGSIZE, KERNBASE-4)) == 0)
+  if((sz = allocuvm(pgdir, sz, sz + 2*PGSIZE)) == 0)
     goto bad;
-  //clear the pte of the first table to make buffer page between stack and data
-  //cs 153 removed this because we don't need the buffer page
-  // clearpteu(pgdir, (char*)(sz - 2*PGSIZE));
-  // cs153 stack pointer should point to the top of the stack
-  sp = KERNBASE-4;
+  clearpteu(pgdir, (char*)(sz - 2*PGSIZE));
+  sp = sz;
 
   // Push argument strings, prepare rest of stack in ustack.
   for(argc = 0; argv[argc]; argc++) {
@@ -103,9 +99,6 @@ exec(char *path, char **argv)
   curproc->sz = sz;
   curproc->tf->eip = elf.entry;  // main
   curproc->tf->esp = sp;
-  //cs153 curproc needs to know the number of pages
-  curproc->pages = 1;
-
   switchuvm(curproc);
   freevm(oldpgdir);
   return 0;

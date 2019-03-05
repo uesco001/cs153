@@ -17,11 +17,9 @@
 int
 fetchint(uint addr, int *ip)
 {
-  //cs153 curproc no longer used
-  //struct proc *curproc = myproc();
+  struct proc *curproc = myproc();
 
-  //cs 153 change curproc->sz to KERNBASE - 4
-  if(addr >= KERNBASE - 4 || addr+4 > KERNBASE - 4)
+  if(addr >= curproc->sz || addr+4 > curproc->sz)
     return -1;
   *ip = *(int*)(addr);
   return 0;
@@ -35,12 +33,10 @@ fetchstr(uint addr, char **pp)
 {
   char *s, *ep;
   struct proc *curproc = myproc();
-  
-  //cs 153 changed curproc->sz to KERNBASE-4
-  if(addr >= KERNBASE-4)
+
+  if(addr >= curproc->sz)
     return -1;
   *pp = (char*)addr;
-  //cs153 MAYBE CHANGE IT TO KERNBASE-4?
   ep = (char*)curproc->sz;
   for(s = *pp; s < ep; s++){
     if(*s == 0)
@@ -63,14 +59,11 @@ int
 argptr(int n, char **pp, int size)
 {
   int i;
-  //cs 153 curproc is no longer used
-  //struct proc *curproc = myproc();
+  struct proc *curproc = myproc();
  
   if(argint(n, &i) < 0)
     return -1;
-  //cs153 curproc->sz no longer points to the top of the stack changing it to
-  //the top of the stack KERNBASE-4
-  if(size < 0 || (uint)i >= KERNBASE-4 || (uint)i+size > KERNBASE-4)
+  if(size < 0 || (uint)i >= curproc->sz || (uint)i+size > curproc->sz)
     return -1;
   *pp = (char*)i;
   return 0;

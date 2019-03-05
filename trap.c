@@ -46,11 +46,6 @@ trap(struct trapframe *tf)
     return;
   }
 
-  //cs153 variable declaration for page fault handling
-  struct proc *curproc = myproc();
-  //store the offending address
-  int oaddress = 0;
-
   switch(tf->trapno){
   case T_IRQ0 + IRQ_TIMER:
     if(cpuid() == 0){
@@ -82,27 +77,6 @@ trap(struct trapframe *tf)
             cpuid(), tf->cs, tf->eip);
     lapiceoi();
     break;
-  //CS 153 Trap handler for page faults
-  case T_PGFLT:
-    oaddress = rcr2();
-    //checks if the offending address is larger than the current stack size
-    if(oaddress > KERNBASE-4-(curproc->pages*PGSIZE)){
-        cprintf("oaddress > Kernbase\nNot a page fault idk Panic!\n");
-        exit();
-    }
-    //allocate a new page for the stack
-    else{
-        cprintf("PAGE FAULT!\nCURSIZE: %d ", curproc->pages*PGSIZE);
-        allocuvm(curproc->pgdir,KERNBASE-4-((curproc->pages+1)*PGSIZE),KERNBASE-4-(curproc->pages*PGSIZE));
-        curproc->pages += 1;
-        cprintf("NEW SIZE: %d\n", curproc->pages*PGSIZE);
-        cprintf("Current Bottom Of Stack: %d\n", oaddress);
-        cprintf("Current Top Of Heap: %d\n", curproc->sz);
-    }
-    lapiceoi();
-    break;
-
-
 
   //PAGEBREAK: 13
   default:
