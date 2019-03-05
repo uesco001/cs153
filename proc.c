@@ -218,6 +218,8 @@ fork(void)
 
   release(&ptable.lock);
 
+  np->pages = curproc->pages;
+
   return pid;
 }
 
