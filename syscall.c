@@ -7,6 +7,9 @@
 #include "x86.h"
 #include "syscall.h"
 
+#include "memlayout.h"
+
+
 // User code makes a system call with INT T_SYSCALL.
 // System call number in %eax.
 // Arguments on the stack, from the user call to the C
@@ -17,9 +20,9 @@
 int
 fetchint(uint addr, int *ip)
 {
-  struct proc *curproc = myproc();
+  //struct proc *curproc = myproc();
 
-  if(addr >= curproc->sz || addr+4 > curproc->sz)
+  if(addr >= USERTOP || addr+4 > USERTOP)
     return -1;
   *ip = *(int*)(addr);
   return 0;
@@ -32,12 +35,12 @@ int
 fetchstr(uint addr, char **pp)
 {
   char *s, *ep;
-  struct proc *curproc = myproc();
+  //struct proc *curproc = myproc();
 
-  if(addr >= curproc->sz)
+  if(addr >= USERTOP)
     return -1;
   *pp = (char*)addr;
-  ep = (char*)curproc->sz;
+  ep = (char*)USERTOP;
   for(s = *pp; s < ep; s++){
     if(*s == 0)
       return s - *pp;
@@ -59,11 +62,11 @@ int
 argptr(int n, char **pp, int size)
 {
   int i;
-  struct proc *curproc = myproc();
+  //struct proc *curproc = myproc();
  
   if(argint(n, &i) < 0)
     return -1;
-  if(size < 0 || (uint)i >= curproc->sz || (uint)i+size > curproc->sz)
+  if(size < 0 || (uint)i >= USERTOP || (uint)i+size > USERTOP)
     return -1;
   *pp = (char*)i;
   return 0;
