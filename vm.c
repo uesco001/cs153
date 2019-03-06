@@ -319,8 +319,7 @@ copyuvm(pde_t *pgdir, uint sz)
   pte_t *pte;
   uint pa, i, flags;
   char *mem;
-  struct proc * p = myproc();
-
+  struct proc* p = myproc();
   if((d = setupkvm()) == 0)
     return 0;
   for(i = 0; i < sz; i += PGSIZE){
@@ -336,21 +335,20 @@ copyuvm(pde_t *pgdir, uint sz)
     if(mappages(d, (void*)i, PGSIZE, V2P(mem), flags) < 0)
       goto bad;
   }
-  //this part added to copy the stack
-  for(i = PGROUNDUP(USERTOP - p->num_stack_pgs*PGSIZE); i < USERTOP; i += PGSIZE){
-    if((pte = walkpgdir(pgdir, (void *) i, 0)) == 0)
-      panic("copyuvm: pte should exist");
-    if(!(*pte & PTE_P))
-      panic("copyuvm: page not present");
-    pa = PTE_ADDR(*pte);
-    flags = PTE_FLAGS(*pte);
-    if((mem = kalloc()) == 0)
-      goto bad;
-    memmove(mem, (char*)P2V(pa), PGSIZE);
-    if(mappages(d, (void*)i, PGSIZE, V2P(mem), flags) < 0)
-      goto bad;
-  }
-
+  for(i = PGROUNDUP(KERNBASE - 4 - p->num_pgs*PGSIZE); i < KERNBASE - 4; i += PGSIZE){
+	if((pte = walkpgdir(pgdir, (void*)i,0)) == 0){
+		panic("copyuvm: pte should exist");
+		}
+	if(!(*pte & PTE_P)){
+		panic("copyuvm: page nkkot present");}
+	pa = PTE_ADDR(*pte);
+	flags = PTE_FLAGS(*pte);
+	if((mem = kalloc()) == 0){
+	   goto bad;}
+	memmove(mem,(char*)P2V(pa), PGSIZE);
+	if(mappages(d, (void*)i, PGSIZE,V2P(mem), flags) < 0){
+	   goto bad;}
+	}
   return d;
 
 bad:

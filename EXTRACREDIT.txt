@@ -1,4 +1,0 @@
-you can not grow the stack in to the heap because you are only allowed to allocate memory if the
-memory is free to use. allocuvm checks if there is memory to grow to and if there is no memory available then
-it will throw an exception not allowing for memory allocation. Thus you are not allowed the stack in to the heap 
-for this reasoing

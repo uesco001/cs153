@@ -45,7 +45,7 @@ trap(struct trapframe *tf)
       exit();
     return;
   }
-
+  struct proc *curproc = myproc();
   switch(tf->trapno){
   case T_IRQ0 + IRQ_TIMER:
     if(cpuid() == 0){
@@ -77,22 +77,24 @@ trap(struct trapframe *tf)
             cpuid(), tf->cs, tf->eip);
     lapiceoi();
     break;
-  
   case T_PGFLT:
-  if((rcr2() < PGROUNDUP(USERTOP - myproc()->num_stack_pgs*PGSIZE)) && (rcr2() < PGROUNDUP(USERTOP - (myproc()->num_stack_pgs-1)*PGSIZE))){
-    //increases the size of the heap by adding 1 to the field num_pages
-    cprintf("page fault detected, number of pages = %d, address = %x, address as an int = %x \n",myproc()->num_stack_pgs, rcr2(), USERTOP - myproc()->num_stack_pgs*PGSIZE);
-    myproc()->num_stack_pgs = 1 + myproc()->num_stack_pgs;
-    if(allocuvm(myproc()->pgdir, (USERTOP - myproc()->num_stack_pgs*PGSIZE), (USERTOP - (myproc()->num_stack_pgs - 1)*PGSIZE))== 0){
-	  panic("you ran out of memory");
+    if((rcr2() > ( KERNBASE - 4 - (curproc->num_pgs*PGSIZE))) ){
+	cprintf("rcr2 =  %d\nBottom: %d\n",rcr2(),KERNBASE - 4 - curproc->num_pgs*PGSIZE);
+	panic("asdflajsd");
 	}
-   // cprintf("Page fault detected, number of stack pages %d, address of page fault = %x \n", myproc()->num_stack_pgs, rcr2());
-    //cprintf("address of stack %d, address of next page of stack %d\n", (USERTOP - (myproc()->num_stack_pgs*PGSIZE)), (USERTOP - (myproc()->num_stack_pgs - 1)*PGSIZE));
+     else{
+		
+	cprintf("InELSEE\n");
+	cprintf("FIRST IF\n %d\n%d\n",rcr2(),KERNBASE - 4 - curproc->num_pgs*PGSIZE);
+	if(allocuvm(curproc->pgdir, (KERNBASE - 4 - (curproc->num_pgs+1)*PGSIZE), (KERNBASE - 4 - (curproc->num_pgs)*PGSIZE))== 0){
+	  panic("you ran out of memory");	}
+	
+	curproc->num_pgs +=1;
+       }
 
-   }
-  break;
-
-  
+    cprintf("BIIIAAATTTCHHHH \n");
+   // lapiceoi();
+    break;
   //PAGEBREAK: 13
   default:
     if(myproc() == 0 || (tf->cs&3) == 0){
