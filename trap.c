@@ -79,20 +79,19 @@ trap(struct trapframe *tf)
     break;
   case T_PGFLT:
     if((rcr2() > ( KERNBASE - 4 - (curproc->num_pgs*PGSIZE))) ){
-	cprintf("rcr2 =  %d\nBottom: %d\n",rcr2(),KERNBASE - 4 - curproc->num_pgs*PGSIZE);
-	panic("asdflajsd");
+	panic("outta bound");
 	}
      else{
-		
-	cprintf("InELSEE\n");
-	cprintf("FIRST IF\n %d\n%d\n",rcr2(),KERNBASE - 4 - curproc->num_pgs*PGSIZE);
 	if(allocuvm(curproc->pgdir, (KERNBASE - 4 - (curproc->num_pgs+1)*PGSIZE), (KERNBASE - 4 - (curproc->num_pgs)*PGSIZE))== 0){
-	  panic("you ran out of memory");	}
+	cprintf("case T_PGFLT from trap.c: allocvum failed. Number of pages allocated: %d\n",curproc->num_pgs);
+	exit();
+       }else {
 	
 	curproc->num_pgs +=1;
-       }
+	cprintf("case T_PGFLT from trap.c: allocuvm succedded. Number of pages allocated: %d\n",curproc->num_pgs);
+	}
+	}
 
-    cprintf("BIIIAAATTTCHHHH \n");
    // lapiceoi();
     break;
   //PAGEBREAK: 13

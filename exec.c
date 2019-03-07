@@ -63,8 +63,6 @@ exec(char *path, char **argv)
   // Allocate two pages at the next page boundary.
   // Make the first inaccessible.  Use the second as the user stack.
   //sz = PGROUNDUP(sz);
-  cprintf("int EXEC\n");
-  cprintf(" Bot :%d\nTop :%d\n",KERNBASE - 4 - PGSIZE, KERNBASE - 4);
   if((sp = allocuvm(pgdir, KERNBASE - 4- PGSIZE, KERNBASE - 4)) == 0)
     goto bad;
   //clearpteu(pgdir, (char*)(sz - 2*PGSIZE));
@@ -102,6 +100,7 @@ exec(char *path, char **argv)
   curproc->tf->eip = elf.entry;  // main
   curproc->tf->esp = sp;
   curproc->num_pgs = 1;
+  cprintf("Initial number of pages by the process: %d\n", curproc->num_pgs);
   switchuvm(curproc);
   freevm(oldpgdir);
   return 0;
